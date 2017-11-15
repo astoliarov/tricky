@@ -3,27 +3,36 @@ package infrastructure
 import (
 	"tricky/lib/infrastructure/dao"
 	"tricky/lib/usecases"
+
+	"github.com/sirupsen/logrus"
 )
 
 func StartApp() {
-	debug := true
-	proxyPort := ":3030"
-	apiPort := ":5050"
-	certPath := "cert/cert"
+	logger := logrus.New()
+
+	config := NewConfig()
+	err := config.FromYAML()
+	if err != nil {
+		logger.Warnf("Couldn't read file: %s", err)
+	}
 
 	inMemoryRulesDAO := dao.InMemoryDAO{}
 	rulesUseCase := usecases.NewRulesUseCase(&inMemoryRulesDAO)
 
-	proxy, err := NewProxy(rulesUseCase, proxyPort, certPath, debug)
+	proxy, err := NewProxy(rulesUseCase, config.ProxyPort, config.CertPath, config.Debug)
 	if err != nil {
-		panic(err)
+		logger.Fatalf("Proxy init error: %s", err)
 	}
 
-	restApi := NewRestApi(rulesUseCase, apiPort)
+	restApi := NewRestApi(rulesUseCase, config.ApiPort, config.Debug)
 
 	go func() {
-		restApi.Run()
+		logger.Infof("Start RestApi on %s", config.ApiPort)
+		err := restApi.Run()
+		logger.Fatalf("rest api run error: %s", err)
 	}()
 
-	proxy.Run()
+	logger.Infof("Start Proxy on %s", config.ProxyPort)
+	err = proxy.Run()
+	logger.Fatalf("proxy run error: %s", err)
 }

@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"log"
 	"net/http"
 	"net/url"
 
@@ -36,8 +35,15 @@ type RestApi struct {
 	port string
 }
 
-func NewRestApi(useCase *usecases.RulesUseCase, port string) *RestApi {
+func NewRestApi(useCase *usecases.RulesUseCase, port string, debug bool) *RestApi {
 	api := RestApi{}
+
+	if debug {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	api.router = gin.Default()
 	api.rulesUseCase = useCase
 	api.port = port
@@ -49,9 +55,8 @@ func NewRestApi(useCase *usecases.RulesUseCase, port string) *RestApi {
 	return &api
 }
 
-func (api *RestApi) Run() {
-	err := http.ListenAndServe(api.port, api.router)
-	log.Println(err)
+func (api *RestApi) Run() error{
+	return http.ListenAndServe(api.port, api.router)
 }
 
 func (api *RestApi) AllRules(c *gin.Context) {

@@ -1,8 +1,8 @@
 package usecases
 
 import (
-	"fmt"
 	"net/url"
+
 	"tricky/lib/domain"
 )
 
@@ -17,7 +17,6 @@ func (ri *RulesUseCase) FindUrl(keys []string) (*url.URL, error) {
 		key := keys[i]
 
 		foundedRule, err := ri.rulesDAO.GetByKey(key)
-		fmt.Println(foundedRule)
 		if err != nil {
 			// TODO: create abstract storage error
 			return nil, err

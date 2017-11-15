@@ -4,11 +4,12 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/astoliarov/goproxy"
 	"io/ioutil"
-	"log"
 	"net/http"
+
 	"tricky/lib/usecases"
+
+	"github.com/astoliarov/goproxy"
 )
 
 type Proxy struct {
@@ -62,9 +63,8 @@ func (pr *Proxy) loadCert() (*tls.Certificate, error) {
 	return &goproxyCa, nil
 }
 
-func (pr *Proxy) Run() {
-	err := http.ListenAndServe(pr.port, pr.proxy)
-	log.Println(err)
+func (pr *Proxy) Run() error{
+	return http.ListenAndServe(pr.port, pr.proxy)
 }
 
 func NewProxy(rulesUseCase *usecases.RulesUseCase, port string, certPath string, debug bool) (*Proxy, error) {
